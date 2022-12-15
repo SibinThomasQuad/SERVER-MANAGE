@@ -4,6 +4,22 @@ clear_color()
     echo -e "$NC"
 }
 
+get_os_info()
+{
+    cat /etc/os-release
+}
+
+install_postgress()
+{
+    GREEN='\033[0;32m'
+    echo "[+] Installing postgress SQL"
+    sudo apt install postgresql postgresql-contrib
+    sudo systemctl start postgresql.service
+    echo -e "$GREEN [+] postgress SQL Installed"
+    clear_color
+
+}
+
 install_nginx()
 {
     GREEN='\033[0;32m'
@@ -110,6 +126,16 @@ lamp_stack()
     echo "[*] PHP 8.1,PHP 8.0,PHP 7.4,PHP 7.3,PHP 7.2"
     echo "[*] MYSQL"
 }
+link_php_nginx()
+{
+    GREEN='\033[0;32m'
+    sudo mkdir /var/www/html/php_webs
+    sudo cp conf/php /etc/nginx/sites-available
+    sudo ln -s /etc/nginx/sites-available/php /etc/nginx/sites-enabled/
+    sudo service nginx restart
+    echo -e "$GREEN [+] Nginx Linked with PHP"
+    clear_color
+}
 
 lnmp_stack()
 {
@@ -121,6 +147,7 @@ lnmp_stack()
     php_7.4
     php_7.3
     php_7.2
+    link_php_nginx
     mysql_server
     clear
     echo "Installed Programs"
@@ -128,6 +155,7 @@ lnmp_stack()
     echo "[*] Nginx"
     echo "[*] PHP 8.1,PHP 8.0,PHP 7.4,PHP 7.3,PHP 7.2"
     echo "[*] MYSQL"
+    echo "[*] URL : http://127.0.0.1:71"
 }
 
 mysql_server()
@@ -190,7 +218,7 @@ php_8.0()
     echo "[+] PHP 8.0 Installation Started"
     sudo apt-get install php8.0 php8.0-fpm
     sudo apt-get install php8.0-mysql php8.0-mbstring php8.0-xml php8.0-gd php8.0-curl
-    echo -e "$GREEN [+] PHP 8.1 Installation Completed"
+    echo -e "$GREEN [+] PHP 8.0 Installation Completed"
     clear_color
 }
 
@@ -256,6 +284,42 @@ change_php()
 
 }
 
+apache_error_log()
+{
+    nano /var/log/apache2/error.log
+}
+
+apache_access_log()
+{
+    nano /var/log/apache2/access.log
+}
+
+nginx_error_log()
+{
+    nano /var/log/nginx/error.log
+}
+
+nginx_access_log()
+{
+    nano /var/log/nginx/access.log
+}
+
+visited_ips_nginx()
+{
+    GREEN='\033[0;32m'
+    echo -e "$GREEN [+] List of visited IPS in NGINX"
+    clear_color
+    sudo awk '{print $1}' /var/log/nginx/access.log | sort | uniq -c | sort -nr
+}
+
+most_visited_url()
+{
+    GREEN='\033[0;32m'
+    echo -e "$GREEN [+] List of visited URLS in NGINX"
+    clear_color
+    awk -F\" '{print $2}' /var/log/nginx/access.log | awk '{print $2}' | sort | uniq -c | sort -r
+}
+
 option_manager()
 {
     #manage options
@@ -266,6 +330,38 @@ option_manager()
     echo -e "$NC"
     read option_name
     
+    if [ $option_name == 29 ]; then
+
+               most_visited_url
+        fi
+    if [ $option_name == 28 ]; then
+
+               visited_ips_nginx
+        fi
+    if [ $option_name == 24 ]; then
+
+               nginx_access_log
+        fi
+    if [ $option_name == 25 ]; then
+
+                nginx_error_log
+        fi
+    if [ $option_name == 26 ]; then
+
+               apache_access_log
+        fi
+    if [ $option_name == 27 ]; then
+
+                apache_error_log
+        fi
+    if [ $option_name == 23 ]; then
+
+                install_postgress
+        fi
+    if [ $option_name == 22 ]; then
+
+                link_php_nginx
+        fi
     if [ $option_name == 21 ]; then
 
                 mysql_server
@@ -369,11 +465,11 @@ label()
     NC='\033[0m'
     echo -e "$ICyan"
     echo ''
-    echo '███████ ████████  █████   ██████ ██   ██      ██████   █████  ███████ ██   ██'
-    echo '██         ██    ██   ██ ██      ██  ██       ██   ██ ██   ██ ██      ██   ██'
-    echo '███████    ██    ███████ ██      █████  █████ ██████  ███████ ███████ ███████'
-    echo '     ██    ██    ██   ██ ██      ██  ██       ██   ██ ██   ██      ██ ██   ██' 
-    echo '███████    ██    ██   ██  ██████ ██   ██      ██████  ██   ██ ███████ ██   ██' 
+    echo '  ███████ ████████  █████   ██████ ██   ██      ██████   █████  ███████ ██   ██'
+    echo '  ██         ██    ██   ██ ██      ██  ██       ██   ██ ██   ██ ██      ██   ██'
+    echo '  ███████    ██    ███████ ██      █████  █████ ██████  ███████ ███████ ███████'
+    echo '       ██    ██    ██   ██ ██      ██  ██       ██   ██ ██   ██      ██ ██   ██' 
+    echo '  ███████    ██    ██   ██  ██████ ██   ██      ██████  ██   ██ ███████ ██   ██' 
     echo ''
     echo -e "$NC"
     echo ''
@@ -382,34 +478,52 @@ label()
 main()
 {
     label
+    BPurple='\033[1;36m'
+    Purple='\033[0;35m'
+    IRed='\033[0;91m'
     IYellow='\033[0;93m'
     NC='\033[0m'
     echo -e "$IYellow"
     echo "Current PHP Version"
     php -r "echo substr(phpversion(),0,3);"
-    echo -e "$NC"
     echo ""
-    echo "[1]   Add PHP repository"
-    echo "[2]   Install PHP 8.1"
-    echo "[3]   Install PHP 8.0"
-    echo "[4]   Install PHP 7.4"
-    echo "[5]   Install PHP 7.3"
-    echo "[6]   Install PHP 7.2"
-    echo "[7]   Install PHP 7.1"
-    echo "[8]   Install PHP 5.6"
-    echo "[9]   Set the php version"
-    echo "[10]  PHP Installed Modules"
-    echo "[11]  Create LAMP Stack"
-    echo "[12]  Enable Apache2 Module re write"
-    echo "[13]  Create LNMP Stack"
+    echo ""
+    BBlue='\033[1;34m' 
+    echo -e "$BBlue"
+    echo "OS Information"
+    get_os_info
+    echo -e "$NC"
+    BBlue='\033[0;32m'
+    echo ""
+    echo -e "[1]    [Add PHP repository $IYellow(Add php repositary to linux system to install diffrent php versions)$NC $IRed[*important]$NC"
+    echo -e "[2]    Install PHP 8.1 $BBlue[PHP]$NC"
+    echo -e "[3]    Install PHP 8.0 $BBlue[PHP]$NC"
+    echo -e "[4]    Install PHP 7.4 $BBlue[PHP]$NC"
+    echo -e "[5]    Install PHP 7.3 $BBlue[PHP]$NC"
+    echo -e "[6]    Install PHP 7.2 $BBlue[PHP]$NC"
+    echo -e "[7]    Install PHP 7.1 $BBlue[PHP]$NC"
+    echo -e "[8]    Install PHP 5.6 $BBlue[PHP]$NC"
+    echo -e "[9]    Set the php version $IYellow(You Can change default php version by clicking this)$NC" 
+    echo -e "[10]   PHP Installed Modules $BBlue[PHP]$NC"
+    echo -e "[11]   Create LAMP Stack $IYellow(You Can Install Apache,PHP,Mysql In sigle click)$NC"
+    echo -e "[12]   Enable Apache2 Module re write $BPurple[APACHE]$NC"
+    echo -e "[13]   Create LEMP Stack $IYellow(You Can Install Nginx,PHP,Mysql In sigle click)$NC"
     echo "[14]  Install Git"
     echo "[15]  Install FTP Server"
     echo "[16]  Install SSH Server"
     echo "[17]  List Installed Packages"
     echo "[18]  List Running Services"
-    echo "[19]  Install Apache2"
-    echo "[20]  Install NGINX"
+    echo -e "[19]   Install Apache2 $BPurple[APACHE]$NC"
+    echo -e "[20]   Install NGINX $Purple[NGINX]$NC"
     echo "[21]  Install MYSQL Server"
+    echo -e "[22]   Connect PHP with NGIX $IYellow(Link PHP and Nginx in a single click)$NC $Purple[NGINX]$NC"
+    echo "[23]  Install PostgreSQL"
+    echo -e "[24]   View NGINX Access Log $Purple[NGINX]$NC"
+    echo -e "[25]   View NGINX Error Log $Purple[NGINX]$NC"
+    echo -e "[26]   View APACHE Access Log $BPurple[APACHE]$NC"
+    echo -e "[27]   View APACHE Error Log $BPurple[APACHE]$NC"
+    echo -e "[28]   List Visited Ip address NGINX $Purple[NGINX]$NC"
+    echo -e "[29]   List Most Visited URLS NGINX $Purple[NGINX]$NC"
     echo "[100]     Update packages"
     echo ""
     option_manager  
